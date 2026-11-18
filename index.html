@@ -456,6 +456,370 @@ const MOBILITY = [
   'Früh schlafen gehen: Schlaf ist der wichtigste Erholungsfaktor'
 ];
 
+/* ---------- Ergänzungen v2: Übungen für Training zuhause ---------- */
+EX_LIST.push(
+  {id:'floorpress_kh', n:'Bodendrücken mit Kurzhanteln', g:'Brust', m:'Brust, Trizeps, vordere Schulter', type:'w', inc:1, sets:3, reps:'8–12',
+   how:['Rücklings auf dem Boden, Knie angewinkelt, Kurzhanteln über der Brust.','Absenken, bis die Oberarme den Boden berühren.','Kraftvoll nach oben drücken.'],
+   err:['Ellbogen knallen auf den Boden','Ellbogen zu weit abgespreizt'], alt:['liegestuetz','schraegbank_kh']},
+  {id:'liegestuetz_eng', n:'Enge Liegestütze', g:'Trizeps', m:'Trizeps, innere Brust', type:'bw', inc:0, sets:3, reps:'8–15',
+   how:['Hände schulterbreit oder enger, Ellbogen nah am Körper.','Körper gerade absenken.','Hochdrücken, Trizeps anspannen.'],
+   err:['Ellbogen gehen nach aussen','Hüfte hängt durch'], alt:['pushdown','ueberkopf_kh']},
+  {id:'ueberkopf_kh', n:'Trizepsdrücken über Kopf (Kurzhantel)', g:'Trizeps', m:'Trizeps (langer Kopf)', type:'w', inc:1, sets:3, reps:'10–12',
+   how:['Eine Kurzhantel mit beiden Händen über dem Kopf halten.','Hinter den Kopf absenken, Ellbogen zeigen nach vorne.','Nach oben strecken.'],
+   err:['Ellbogen weit offen','Hohlkreuz'], alt:['ueberkopf_kabel','pushdown']},
+  {id:'reverse_fly_kh', n:'Vorgebeugtes Seitheben (Kurzhantel)', g:'Schultern', m:'Hintere Schulter, oberer Rücken', type:'w', inc:1, sets:3, reps:'12–15',
+   how:['Oberkörper weit nach vorne geneigt, Rücken gerade.','Arme leicht gebeugt seitlich anheben.','Langsam absenken.'],
+   err:['Schwung aus dem Oberkörper','Zu schwer'], alt:['reardelt','facepull']},
+  {id:'pike_pushup', n:'Pike Push-ups', g:'Schultern', m:'Schultern, Trizeps', type:'bw', inc:0, sets:3, reps:'6–12',
+   how:['Aus dem Liegestütz die Hüfte hoch schieben (umgekehrtes V).','Kopf Richtung Boden zwischen die Hände senken.','Wieder hochdrücken.'],
+   err:['Hüfte sinkt ab','Ellbogen weit aussen'], alt:['schulterdruecken_kh']},
+  {id:'inverted_row', n:'Rudern unter dem Tisch / Australian Pull-ups', g:'Rücken', m:'Oberer Rücken, Lat, Bizeps', type:'bw', inc:0, sets:3, reps:'8–15',
+   how:['Unter einen stabilen Tisch oder eine tiefe Stange legen.','Körper gestreckt, Brust zur Kante ziehen.','Kontrolliert ablassen. Nur an sicher stabilen Möbeln!'],
+   err:['Hüfte hängt durch','Instabile Unterlage'], alt:['rudern_kh','latzug']},
+  {id:'kniebeuge_kg', n:'Kniebeugen (Körpergewicht)', g:'Beine', m:'Oberschenkel, Gesäss', type:'bw', inc:0, sets:3, reps:'15–25',
+   how:['Füsse schulterbreit, Arme nach vorne.','Tief absitzen, Fersen bleiben am Boden.','Aufstehen und oben Gesäss anspannen.'],
+   err:['Knie fallen nach innen','Fersen heben ab'], alt:['goblet','bulgarian']},
+  {id:'beinheben_liegend', n:'Beinheben liegend', g:'Bauch', m:'Unterer Bauch, Hüftbeuger', type:'bw', inc:0, sets:3, reps:'10–15',
+   how:['Rücklings liegen, Hände neben dem Gesäss.','Gestreckte Beine bis 90° anheben.','Langsam absenken, unterer Rücken bleibt am Boden.'],
+   err:['Hohlkreuz','Beine fallen lassen'], alt:['beinheben_haengend','plank']}
+);
+
+/* Erholungs-Empfehlungen (allgemeine Hinweise, keine medizinische Beratung) */
+const RECOVERY_TIPS = {
+  sleep: 'Schlaf: 7–9 Stunden pro Nacht – der wichtigste Faktor für Erholung und Muskelaufbau.',
+  walk: 'Lockere Bewegung an Ruhetagen: 30–45 Minuten spazieren oder Velo fahren.',
+  mobility: 'Mobilität: 10 Minuten Dehnen und Gelenkmobilisation, z. B. nach dem Training.',
+  sauna: 'Sauna: 1–3× pro Woche, 2–3 Durchgänge à 8–15 Minuten mit Abkühlpausen. Viel trinken. Sauna verbrennt kein Fett – der Gewichtsverlust ist nur Wasser. Bei Herz-Kreislauf-Problemen vorher ärztlich abklären.',
+  cold: 'Eisbad / kalte Dusche: 1–5 Minuten bei ca. 10–15 °C. Wenn Muskelaufbau dein Ziel ist, nicht direkt nach dem Krafttraining – Studien zeigen, dass regelmässige Kälte direkt danach den Muskelaufbau abschwächen kann. Besser an Ruhetagen. Nie allein ins Eiswasser; bei Herzproblemen vorher ärztlich abklären.'
+};
+
+'use strict';
+/* =====================================================================
+   ATHLETIC OS 2.0 – Rechner, Plan-Generator und regelbasierter Coach
+   Alle Werte sind Schätzungen für gesunde Erwachsene, keine medizinische Beratung.
+   ===================================================================== */
+
+/* ---------- Auswahl-Optionen ---------- */
+const GOALS = {
+  muscle:   { l: 'Muskelaufbau', s: 'Mehr Muskeln und Kraft, leichter Kalorienüberschuss' },
+  lose:     { l: 'Abnehmen & definieren', s: 'Fett verlieren, Muskeln erhalten, Kaloriendefizit' },
+  athletic: { l: 'Athletik & Sport', s: 'Schnelligkeit, Explosivität und Ausdauer, z. B. für Fussball' },
+  health:   { l: 'Fit & gesund bleiben', s: 'Ausgewogen, moderat, langfristig' }
+};
+const ACTIVITIES = {
+  low:  { l: 'Wenig aktiv', s: 'Büro, viel Sitzen', f: 1.2 },
+  mid:  { l: 'Gemischt', s: 'Teils sitzend, teils auf den Beinen', f: 1.35 },
+  high: { l: 'Körperlich aktiv', s: 'Handwerk, Lager, viel Gehen', f: 1.5 }
+};
+const EQUIP = {
+  gym: { l: 'Fitnessstudio', s: 'Maschinen, Kabelzüge, Hanteln' },
+  kh:  { l: 'Zuhause mit Kurzhanteln', s: 'Kurzhanteln, evtl. Bank' },
+  bw:  { l: 'Nur Körpergewicht', s: 'Ohne Geräte' }
+};
+const LEVELS = { beginner: { l: 'Einsteiger', s: 'Weniger als 1 Jahr regelmässig trainiert' }, advanced: { l: 'Fortgeschritten', s: 'Mehr als 1 Jahr regelmässig trainiert' } };
+const FOCUS_LIST = ['Brust', 'Rücken', 'Schultern', 'Arme', 'Beine', 'Po', 'Bauch', 'Waden'];
+const DURATIONS = [30, 45, 60, 75];
+
+/* ---------- Rechner ---------- */
+function bmiOf(p) {
+  if (!(p.weight > 0 && p.height > 0)) return null;
+  const v = p.weight / Math.pow(p.height / 100, 2);
+  const c = v < 18.5 ? { l: 'Untergewicht', c: 'warn' } : v < 25 ? { l: 'Normalgewicht', c: 'ok' } : v < 30 ? { l: 'Übergewicht', c: 'warn' } : { l: 'Adipositas', c: 'bad' };
+  return { v: Math.round(v * 10) / 10, ...c };
+}
+function nutritionOf(p) {
+  if (!(p.weight > 0 && p.height > 0 && p.age > 0)) return null;
+  const sexAdj = p.sex === 'm' ? 5 : p.sex === 'f' ? -161 : -78;
+  const bmr = 10 * p.weight + 6.25 * p.height - 5 * p.age + sexAdj;
+  const gymDays = (p.days || []).length, sport = (p.sportDays || []).length;
+  const f = (ACTIVITIES[p.activity] || ACTIVITIES.mid).f + 0.04 * gymDays + 0.03 * sport + (p.cardio ? 0.02 : 0);
+  const tdee = bmr * f;
+  const bmi = bmiOf(p);
+  const notes = [];
+  let kcal = tdee, goal = p.goal || 'health';
+  const minor = p.age < 18;
+  if (goal === 'lose') {
+    if (bmi && bmi.v < 18.5) { notes.push('Dein BMI liegt im Untergewicht. Ein Kaloriendefizit ist deshalb nicht empfohlen – das Ziel wurde auf Erhaltung gesetzt. Bitte sprich mit deiner Ärztin oder deinem Arzt.'); }
+    else if (minor) { notes.push('Für Jugendliche unter 18 berechnet die App kein Kaloriendefizit. Bitte Ernährungsfragen mit einer Fachperson besprechen.'); }
+    else {
+      const deficit = Math.min(tdee * 0.2, 700);
+      kcal = Math.max(tdee - deficit, bmr, p.sex === 'f' ? 1200 : 1500);
+      notes.push('Moderates Defizit von ca. 15–20 %: realistisch sind etwa 0,3–0,7 kg pro Woche. Krafttraining und genug Protein schützen dabei deine Muskeln.');
+    }
+  } else if (goal === 'muscle') {
+    if (bmi && bmi.v >= 27) { notes.push('Bei deinem BMI empfehlen wir Erhaltungskalorien statt Überschuss: So baust du Muskeln auf und verlierst gleichzeitig etwas Fett.'); }
+    else { kcal = tdee + 250; notes.push('Leichter Überschuss (+250 kcal) für Muskelaufbau mit möglichst wenig Fettzunahme. Ziel: ca. 0,25–0,5 kg pro Monat.'); }
+  } else notes.push('Erhaltungskalorien: Dein Gewicht sollte ungefähr stabil bleiben.');
+  // Protein nach Ziel; bei BMI ≥ 30 bezogen auf ein Referenzgewicht (BMI 25)
+  const refW = bmi && bmi.v >= 30 ? 25 * Math.pow(p.height / 100, 2) : p.weight;
+  const gkg = { lose: 2.0, muscle: 1.8, athletic: 1.8, health: 1.4 }[goal] || 1.6;
+  const protein = Math.round(refW * gkg / 5) * 5;
+  kcal = Math.round(kcal / 10) * 10;
+  const fat = Math.round(kcal * 0.27 / 9 / 5) * 5;
+  const carbs = Math.max(0, Math.round((kcal - protein * 4 - fat * 9) / 4 / 5) * 5);
+  const water = Math.round(p.weight * 0.035 * 10) / 10;
+  if (bmi && bmi.v >= 30) notes.push('Bei einem BMI ab 30 lohnt sich eine Abklärung bei der Hausärztin oder dem Hausarzt – auch für einen sicheren Trainingseinstieg.');
+  return { bmr: Math.round(bmr), tdee: Math.round(tdee / 10) * 10, kcal, protein, fat, carbs, water, gkg, notes, bmi };
+}
+
+/* ---------- Plan-Generator ---------- */
+// Verfügbarkeit der Übungen je Ausrüstung: bw = überall, kh = Kurzhanteln/zuhause, sonst nur Studio
+const EQ_BW = ['liegestuetz','liegestuetz_eng','pike_pushup','inverted_row','kniebeuge_kg','beinheben_liegend','plank','box_jump','sprints','zone2','waden_stehend','bulgarian','ausfallschritte','hipthrust'];
+const EQ_KH = ['floorpress_kh','seitheben_kh','schulterdruecken_kh','curl_kh','hammercurl','rudern_kh','goblet','reverse_fly_kh','ueberkopf_kh','kb_swing','farmers_walk','ab_roller','seilspringen'];
+function exAvailable(id, equip) { if (equip === 'gym') return true; if (EQ_BW.includes(id)) return true; return equip === 'kh' && EQ_KH.includes(id); }
+
+const POOLS = {
+  pushH:   ['bankdruecken','schraegbank_kh','brustpresse','floorpress_kh','liegestuetz'],
+  pushH2:  ['kabel_fly','butterfly','liegestuetz','floorpress_kh'],
+  pullV:   ['latzug','klimmzug','latzug_eng','inverted_row','rudern_kh'],
+  pullH:   ['rudern_kabel','rudern_maschine','rudern_kh','inverted_row'],
+  pushV:   ['schulterdruecken_kh','schulterpresse','pike_pushup'],
+  lateral: ['seitheben_kh','seitheben_kabel'],
+  rear:    ['reardelt','facepull','reverse_fly_kh'],
+  biceps:  ['curl_kh','curl_kabel','hammercurl','scottcurl'],
+  triceps: ['pushdown','ueberkopf_kabel','ueberkopf_kh','kickback','liegestuetz_eng'],
+  squat:   ['kniebeuge','beinpresse','goblet','kniebeuge_kg'],
+  lunge:   ['bulgarian','ausfallschritte'],
+  hinge:   ['hipthrust','rueckenstrecker','kb_swing'],
+  hamcurl: ['beinbeuger'],
+  quadIso: ['beinstrecker'],
+  calves:  ['waden_stehend','waden_sitzend'],
+  core:    ['kabelcrunch','beinheben_haengend','pallof','ab_roller','beinheben_liegend','plank'],
+  power:   ['box_jump']
+};
+const COMPOUND = ['pushH','pullV','pullH','pushV','squat','lunge','hinge'];
+const UPPER = ['pushH','pushH2','pullV','pullH','pushV','lateral','rear','biceps','triceps'];
+const LOWER = ['squat','lunge','hinge','hamcurl','quadIso','calves','power'];
+const FOCUS_MAP = { 'Brust': ['pushH2','pushH'], 'Rücken': ['pullH','pullV'], 'Schultern': ['lateral','rear','pushV'], 'Arme': ['biceps','triceps'], 'Beine': ['squat','lunge','quadIso','hamcurl'], 'Po': ['hinge','lunge'], 'Bauch': ['core'], 'Waden': ['calves'] };
+const DAY_TYPES = {
+  fullA: { n: 'Ganzkörper', t: 'full', p: ['squat','pushH','pullV','hinge','lateral','core','biceps'] },
+  fullB: { n: 'Ganzkörper', t: 'full', p: ['lunge','pushV','pullH','hamcurl','rear','triceps','core'] },
+  fullC: { n: 'Ganzkörper', t: 'full', p: ['hinge','pushH','pullV','squat','lateral','biceps','triceps','calves'] },
+  upA:   { n: 'Oberkörper', t: 'upper', p: ['pushH','pullV','pushH2','pullH','lateral','triceps','biceps'] },
+  upB:   { n: 'Oberkörper', t: 'upper', p: ['pushV','pullH','pushH','pullV','lateral','rear','biceps','triceps'] },
+  loA:   { n: 'Unterkörper', t: 'lower', p: ['power','squat','hinge','lunge','hamcurl','calves','core'] },
+  loB:   { n: 'Unterkörper', t: 'lower', p: ['squat','lunge','hinge','quadIso','calves','core'] },
+  push:  { n: 'Push – Brust, Schultern, Trizeps', t: 'push', p: ['pushH','pushV','pushH2','lateral','triceps','triceps'] },
+  pull:  { n: 'Pull – Rücken & Bizeps', t: 'pull', p: ['pullV','pullH','rear','pullH','biceps','biceps','core'] },
+  legs:  { n: 'Beine & Po', t: 'lower', p: ['power','squat','hinge','lunge','hamcurl','calves','core'] }
+};
+const SPLITS = {
+  2: { d: 'Ganzkörper-Plan: Jede Muskelgruppe wird 2× pro Woche trainiert.', seq: ['fullA','fullB'] },
+  3: { d: 'Ganzkörper-Plan: Jede Muskelgruppe 3× pro Woche – ideal für schnellen, effizienten Fortschritt.', seq: ['fullA','fullB','fullC'] },
+  4: { d: 'Oberkörper/Unterkörper-Split: Jede Muskelgruppe 2× pro Woche mit genug Erholung dazwischen.', seq: ['upA','loA','upB','loB'] },
+  5: { d: 'Oberkörper/Unterkörper plus Push/Pull/Beine: hohes Volumen, jede Muskelgruppe ca. 2× pro Woche.', seq: ['upA','loA','push','pull','legs'] },
+  6: { d: 'Push/Pull/Beine 2× pro Woche: hohes Volumen für Fortgeschrittene.', seq: ['push','pull','legs','push','pull','legs'] }
+};
+const MAX_EX = { 30: 4, 45: 5, 60: 6, 75: 7 };
+const DEFAULT_DAYS = { 2: [2, 5], 3: [1, 3, 5], 4: [1, 2, 4, 5], 5: [1, 2, 3, 5, 6], 6: [1, 2, 3, 4, 5, 6] };
+
+function scheme(goal, level, pattern, exId, isFocus) {
+  const e = ex(exId) || {};
+  const comp = COMPOUND.includes(pattern);
+  let sets, min, max, rest;
+  if (pattern === 'power') return { sets: 3, repMin: 4, repMax: 5, rest: 90 };
+  if (e.type === 't') return { sets: 2, repMin: 30, repMax: 60, rest: 45 };
+  if (goal === 'muscle') { sets = 3; [min, max] = comp ? [6, 10] : [10, 15]; rest = comp ? 120 : 75; }
+  else if (goal === 'lose') { sets = 3; [min, max] = comp ? [8, 12] : [12, 15]; rest = comp ? 90 : 60; }
+  else if (goal === 'athletic') { sets = comp ? 3 : 2; [min, max] = comp ? [5, 8] : [10, 12]; rest = comp ? 150 : 60; }
+  else { sets = comp ? 3 : 2; [min, max] = comp ? [10, 12] : [12, 15]; rest = comp ? 90 : 60; }
+  if (e.type === 'bw') { [min, max] = comp ? [8, 15] : [10, 20]; if (exId === 'kniebeuge_kg') [min, max] = [15, 25]; }
+  if (level === 'beginner' && !comp) sets = Math.max(2, sets - 1);
+  if (level === 'beginner' && goal === 'athletic' && comp) [min, max] = [8, 10];
+  if (isFocus) sets = Math.min(4, sets + 1);
+  return { sets, repMin: min, repMax: max, rest };
+}
+
+function generatePlan(pr) {
+  const goal = pr.goal || 'health', equip = pr.equip || 'gym', level = pr.level || 'beginner';
+  const days = [...(pr.days || [])].sort((a, b) => a - b);
+  const sportDays = (pr.sportDays || []).filter(d => !days.includes(d));
+  const n = Math.max(2, Math.min(6, days.length || 3));
+  const split = SPLITS[n];
+  const focusP = new Set((pr.focus || []).flatMap(f => FOCUS_MAP[f] || []));
+  const maxEx = MAX_EX[pr.duration] || 6;
+  const usePower = goal === 'athletic' || sportDays.length > 0;
+  const counters = {}, templates = {}, letters = {};
+  const tplIds = [];
+
+  split.seq.forEach((key, idx) => {
+    const dt = DAY_TYPES[key];
+    let pats = dt.p.filter(p => p !== 'power' || usePower);
+    // Fokus-Extras ergänzen
+    for (const f of pr.focus || []) {
+      const fp = (FOCUS_MAP[f] || []).find(p => p === 'core' || dt.t === 'full' || (dt.t === 'upper' && UPPER.includes(p)) || (dt.t === 'lower' && LOWER.includes(p)) || (dt.t === 'push' && ['pushH','pushH2','pushV','lateral','triceps'].includes(p)) || (dt.t === 'pull' && ['pullV','pullH','rear','biceps'].includes(p)));
+      if (fp && !pats.includes(fp)) { const firstIso = pats.findIndex(p => !COMPOUND.includes(p) && p !== 'power'); pats.splice(firstIso < 0 ? pats.length : firstIso, 0, fp); }
+    }
+    // Priorisieren und auf die Zeit kürzen
+    let nComp = 0;
+    const ranked = pats.map((p, i) => ({ p, i, pr: (p === 'power' ? -1 : COMPOUND.includes(p) && nComp++ < 3 ? i : focusP.has(p) ? 20 + i : COMPOUND.includes(p) ? 30 + i : 100 + i) }));
+    const extra = (usePower && pats.includes('power') ? 1 : 0) + ((pr.focus || []).length >= 2 && maxEx >= 6 ? 1 : 0);
+    const keep = ranked.sort((a, b) => a.pr - b.pr).slice(0, maxEx + extra).sort((a, b) => a.i - b.i);
+    const items = [], used = new Set();
+    for (const { p } of keep) {
+      const pool = (POOLS[p] || []).filter(id => exAvailable(id, equip) && !used.has(id) && ex(id));
+      if (!pool.length) continue;
+      const c = counters[p] || 0; counters[p] = c + 1;
+      const id = pool[c % pool.length];
+      used.add(id);
+      items.push({ exId: id, ...scheme(goal, level, p, id, focusP.has(p)) });
+    }
+    letters[dt.n] = (letters[dt.n] || 0) + 1;
+    const id = 'g' + (idx + 1);
+    templates[id] = { id, name: dt.n, items, type: dt.t };
+    tplIds.push(id);
+  });
+  // Buchstaben nur bei Wiederholung
+  const total = {}; Object.values(templates).forEach(t => total[t.name] = (total[t.name] || 0) + 1);
+  const seen = {}; Object.values(templates).forEach(t => { if (total[t.name] > 1) { seen[t.name] = (seen[t.name] || 0) + 1; t.name += ' ' + 'ABC'[seen[t.name] - 1]; } });
+
+  // Zuweisung auf Wochentage: Beintage nicht direkt vor/an Sporttagen, nicht zwei Beintage hintereinander
+  const isLower = id => templates[id].type === 'lower';
+  let best = null;
+  for (let off = 0; off < tplIds.length; off++) {
+    const order = tplIds.map((_, i) => tplIds[(i + off) % tplIds.length]);
+    let pen = 0;
+    days.forEach((d, i) => {
+      if (!isLower(order[i])) return;
+      const next = d % 7 + 1, prev = (d + 5) % 7 + 1;
+      if (sportDays.includes(next)) pen += 3;
+      if (sportDays.includes(prev)) pen += 1;
+      const j = days.indexOf(next); if (j >= 0 && isLower(order[j])) pen += 2;
+    });
+    if (!best || pen < best.pen) best = { pen, order };
+  }
+  const schedule = {}; for (let d = 1; d <= 7; d++) schedule[d] = 'rest';
+  days.forEach((d, i) => schedule[d] = best.order[i]);
+
+  // Cardio
+  const notes = [];
+  if (pr.cardio) {
+    let want = goal === 'lose' ? 3 : 2;
+    const free = [1, 2, 3, 4, 5, 6, 7].filter(d => schedule[d] === 'rest' && !sportDays.includes(d));
+    const usable = free.length >= 2 ? free.slice(0, free.length - 1) : [];
+    const pick = []; const step = usable.length / Math.max(1, Math.min(want, usable.length));
+    for (let i = 0; i < Math.min(want, usable.length); i++) pick.push(usable[Math.floor(i * step)]);
+    const intervalOK = goal !== 'health' || level === 'advanced';
+    pick.forEach((d, i) => {
+      const interval = intervalOK && i === pick.length - 1 && pick.length > 1 || (goal === 'athletic' && i === 0);
+      const id = interval ? 'gci' : 'gcz';
+      if (!templates[id]) templates[id] = interval
+        ? { id, name: 'Cardio – Intervalle', type: 'cardio', items: (goal === 'athletic' || equip !== 'gym')
+            ? [{ exId: 'sprints', sets: 6, repMin: 15, repMax: 20, rest: 90 }, { exId: 'plank', sets: 2, repMin: 30, repMax: 60, rest: 45 }]
+            : [{ exId: 'rad_intervalle', sets: 4, repMin: 180, repMax: 240, rest: 180 }, { exId: 'plank', sets: 2, repMin: 30, repMax: 60, rest: 45 }] }
+        : { id, name: 'Cardio – locker (Zone 2)', type: 'cardio', items: [{ exId: 'zone2', sets: 1, repMin: goal === 'lose' ? 1800 : 1500, repMax: goal === 'lose' ? 2700 : 2400, rest: 0 }] };
+      schedule[d] = id;
+    });
+    const rest = want - pick.length;
+    if (rest > 0) {
+      tplIds.slice(0, rest).forEach(id => templates[id].items.push({ exId: 'zone2', sets: 1, repMin: 600, repMax: 900, rest: 0 }));
+      notes.push(`Nicht genug freie Tage für separate Cardio-Einheiten – ${rest}× als 10–15-Minuten-Ausklang am Ende des Krafttrainings eingeplant.`);
+    }
+  } else notes.push('Empfehlung: Für Herz und Kreislauf raten die WHO-Richtlinien zu 150–300 Minuten moderater Ausdauer pro Woche. Du kannst Cardio jederzeit im Profil ergänzen.');
+  if (level === 'beginner' && n >= 5) notes.push('Als Einsteiger erzielst du mit 3–4 Einheiten pro Woche meist ähnliche Fortschritte bei besserer Erholung.');
+  if (!Object.values(schedule).includes('rest')) notes.push('Achtung: Kein kompletter Ruhetag in der Woche. Mindestens ein freier Tag wird empfohlen.');
+
+  const season = { ...schedule }; sportDays.forEach(d => { if (season[d] === 'rest') season[d] = 'football'; });
+  return { templates, schedule: { winter: schedule, season }, split: split.d, notes };
+}
+
+function recoveryTipsFor(p) {
+  const t = [RECOVERY_TIPS.sleep, RECOVERY_TIPS.walk, RECOVERY_TIPS.mobility];
+  if (p.sauna) t.push(RECOVERY_TIPS.sauna);
+  if (p.cold) t.push(RECOVERY_TIPS.cold);
+  return t;
+}
+
+/* ---------- Regelbasierter Coach ---------- */
+const NUMW = { zwei: 2, drei: 3, vier: 4, fuenf: 5, fünf: 5, sechs: 6 };
+const FOCUS_WORDS = [
+  ['Brust', ['brust', 'pecs', 'bankdr']], ['Rücken', ['rücken', 'ruecken', 'lat ', 'breiter rücken', 'v-form']], ['Schultern', ['schulter', 'delt']],
+  ['Arme', ['arm', 'bizeps', 'trizeps']], ['Beine', ['bein', 'oberschenkel', 'quad']], ['Po', ['po ', 'po,', 'gesäss', 'gesaess', 'glute', 'hintern']],
+  ['Bauch', ['bauch', 'sixpack', 'six pack', 'core', 'rumpf']], ['Waden', ['wade']]
+];
+function norm(s) { return ' ' + String(s).toLowerCase().replace(/ß/g, 'ss') + ' '; }
+function findExercise(t) {
+  let best = null;
+  for (const e of allEx()) {
+    const words = e.n.toLowerCase().split(/[\s()/–-]+/).filter(w => w.length > 4);
+    for (const w of words) if (t.includes(w) && (!best || w.length > best.w.length)) best = { e, w };
+  }
+  return best && best.e;
+}
+function listJoin(a) { return a.length <= 1 ? (a[0] || '') : a.slice(0, -1).join(', ') + ' und ' + a[a.length - 1]; }
+
+function coachReply(text) {
+  const t = norm(text), P = S.profile, k = today();
+  const has = (...w) => w.some(x => t.includes(x));
+  const exm = findExercise(t);
+
+  if (exm && has('ersetz', 'alternativ', 'statt', 'austausch', 'tauschen')) {
+    const alts = (exm.alt || []).map(a => ex(a)).filter(Boolean);
+    return { text: alts.length ? `Für „${exm.n}“ eignen sich: ${listJoin(alts.map(a => a.n))}. Diese trainieren ähnliche Muskeln. Austauschen kannst du die Übung im Trainingsplan unter „Einheiten“ → Übung antippen → „Übung austauschen“.` : `Für „${exm.n}“ ist keine Alternative hinterlegt. In der Übungsbibliothek findest du weitere Übungen derselben Muskelgruppe (${exm.g}).` };
+  }
+  if (exm && has('verbesser', 'fortschritt', 'stärker', 'staerker', 'gesteigert', 'entwickl')) {
+    const rows = exHistory(exm.id);
+    if (rows.length < 2) return { text: `Für „${exm.n}“ gibt es erst ${rows.length} gespeichertes Training. Für eine Aussage brauche ich mindestens 2 Trainings.` };
+    const a = rows[0], b = rows[rows.length - 1];
+    const better = a.type === 'w' ? b.e1 > a.e1 : b.best.r > a.best.r;
+    return { text: `${exm.n}: vom ${fmtShort(a.date)} (${fmtSet(a.type, a.best)}) bis zum ${fmtShort(b.date)} (${fmtSet(b.type, b.best)}). ${better ? 'Das ist eine Verbesserung' : 'Noch keine messbare Steigerung'} – vergleichbar ist das nur bei gleicher Technik und gleichem Gerät.` };
+  }
+
+  // Planänderung
+  const focus = FOCUS_WORDS.filter(([, ws]) => ws.some(w => t.includes(w))).map(([f]) => f);
+  let goal = null;
+  if (has('abnehm', 'fett', 'definier', 'gewicht verlier', 'schlank', 'diät', 'diaet')) goal = 'lose';
+  else if (has('muskel', 'masse', 'aufbau', 'zunehm', 'breiter', 'grösser', 'groesser', 'stärker werden', 'kraft')) goal = 'muscle';
+  else if (has('fussball', 'schnell', 'explosiv', 'sprint', 'athlet', 'sport')) goal = 'athletic';
+  else if (has('gesund', 'fit bleiben', 'fit halten')) goal = 'health';
+  let freq = null; const fm = t.match(/(\d)\s*(x|mal|×|tage|tag|einheiten)/) || t.match(/(zwei|drei|vier|fuenf|fünf|sechs)\s*(mal|tage)/);
+  if (fm) freq = Math.max(2, Math.min(6, NUMW[fm[1]] || +fm[1]));
+  let dur = null; const dm = t.match(/(\d{2})\s*(min|minuten)/); if (dm) dur = DURATIONS.reduce((a, b) => Math.abs(b - dm[1]) < Math.abs(a - dm[1]) ? b : a);
+  const cardioOn = has('cardio', 'ausdauer', 'herz', 'laufen', 'joggen') && !has('kein cardio', 'ohne cardio') ? true : has('kein cardio', 'ohne cardio') ? false : null;
+  const planWords = has('plan', 'trainier', 'will', 'möchte', 'moechte', 'fokus', 'mehr ', 'ziel', 'pro woche');
+  const askNutri = has('protein', 'kalorie', 'kcal', 'essen', 'ernähr', 'ernaehr', 'bmi', 'makro');
+  if (!askNutri && (focus.length || goal || freq || dur || (cardioOn !== null && planWords)) && (planWords || freq || dur)) {
+    const np = clone(P);
+    if (goal) np.goal = goal;
+    if (focus.length) np.focus = has('auch', 'zusätzlich', 'zusaetzlich', 'dazu') ? [...new Set([...(P.focus || []), ...focus])] : focus;
+    if (freq) np.days = (DEFAULT_DAYS[freq].filter(d => !(P.sportDays || []).includes(d)).length >= freq ? DEFAULT_DAYS[freq] : [1, 2, 3, 4, 5, 6, 7].filter(d => !(P.sportDays || []).includes(d)).slice(0, freq));
+    if (dur) np.duration = dur;
+    if (cardioOn !== null) np.cardio = cardioOn;
+    if (!np.days || np.days.length < 2) np.days = DEFAULT_DAYS[3];
+    const plan = generatePlan(np);
+    const gTxt = { muscle: 'Muskelaufbau mit progressiver Steigerung der Gewichte im Bereich von 6–15 Wiederholungen', lose: 'Fettabbau: Krafttraining erhält die Muskulatur, Cardio und ein moderates Kaloriendefizit sorgen für den Fettverlust', athletic: 'Athletik: Explosivübungen zu Beginn der Beineinheit, kräftige Grundübungen und Intervalle für die Spritzigkeit', health: 'ausgewogene Fitness mit moderatem Volumen und Fokus auf saubere Technik' }[np.goal];
+    const txt = `Verstanden. Neuer Vorschlag: ${GOALS[np.goal].l}${np.focus?.length ? ', Fokus auf ' + listJoin(np.focus) : ''}, ${np.days.length}× pro Woche à ${np.duration} Minuten.\n\n${plan.split} Schwerpunkt: ${gTxt}.${np.focus?.length ? ` ${listJoin(np.focus)} erhalten zusätzliche Sätze und Übungen.` : ''}${np.cardio ? ' Cardio für Herz und Ausdauer ist eingeplant.' : ''}`;
+    return { text: txt, plan, prefs: np };
+  }
+
+  if (has('heute') && has('was', 'training', 'trainier', 'plan', 'machen')) {
+    const p = planFor(k);
+    if (S.templates[p]) { const tp = S.templates[p]; return { text: `Heute steht „${tp.name}“ auf dem Plan: ${tplGroups(tp).join(', ')} – ${adjustItems(tp.items, S.adjust[k]).length} Übungen, ca. ${tplMinutes(tp, S.adjust[k])} Minuten. Starte das Training auf der Seite „Heute“.` }; }
+    if (p === 'football') return { text: `Heute ist ${sportName()} geplant. Kein schweres Beintraining – optional 10 Minuten Mobilität zum Aufwärmen.` };
+    return { text: 'Heute ist ein Ruhetag. Empfohlen: Spaziergang, leichte Mobilität und genug Schlaf. Du kannst den Tag auf „Heute“ trotzdem zu einem Trainingstag machen.' };
+  }
+  if (has('müde', 'muede', 'ruhetag', 'pause machen', 'erschöpft', 'erschoepft', 'krank', 'schmerz', 'verletz', 'kaputt', 'muskelkater')) {
+    if (has('krank', 'fieber', 'verletz', 'schmerz')) return { text: 'Bei Krankheit (v. a. Fieber) oder Schmerzen solltest du nicht trainieren. Muskelkater ist harmlos, ein stechender oder anhaltender Gelenkschmerz nicht – lass das bei anhaltenden Beschwerden ärztlich abklären. Erhole dich und steige danach mit leichterem Training wieder ein.' };
+    const r = recovery(k);
+    return { text: `Einschätzung: ${r.l} (${r.why.join(', ')}). ${r.c === 'bad' ? 'Ein Ruhetag oder eine leichte Einheit ist heute sinnvoll.' : r.c === 'warn' ? 'Trainiere wie geplant, aber wähle über „Müde? Anpassen“ ruhig die leichtere Variante.' : 'Aus Planungssicht spricht nichts gegen das Training. Entscheidend ist dein Körpergefühl – bei echter Erschöpfung lieber pausieren.'} Hinweis: Das ist eine Einschätzung aus deinem Plan, keine Messung.` };
+  }
+  if (askNutri) {
+    const n = nutritionOf(P);
+    if (!n) return { text: 'Dafür brauche ich Alter, Grösse und Gewicht. Trag sie im Profil ein.' };
+    return { text: `Deine Richtwerte (${GOALS[P.goal]?.l || 'Ziel'}): ca. ${n.kcal.toLocaleString('de-CH')} kcal pro Tag, ${n.protein} g Protein (${n.gkg} g pro kg), ca. ${n.fat} g Fett und ${n.carbs} g Kohlenhydrate. BMI: ${n.bmi ? n.bmi.v + ' (' + n.bmi.l + ')' : '–'}. Das sind Schätzungen (±10–15 %): Beobachte dein Gewicht 2–3 Wochen und passe dann an. Details unter „Ernährung“.` };
+  }
+  if (has('woche') && has('trainiert', 'muskel', 'gemacht')) {
+    const ws = addDays(k, 1 - wdOf(k)), ss = S.sessions.filter(s => s.date >= ws);
+    const g = [...new Set(ss.flatMap(s => s.items.filter(i => i.log.some(l => l.done)).map(i => i.g)))];
+    return { text: ss.length ? `Diese Woche: ${ss.length} Training${ss.length > 1 ? 's' : ''} mit ${listJoin(g)}.` : 'Diese Woche ist noch kein Training gespeichert.' };
+  }
+  if (has('sauna', 'dampf')) return { text: RECOVERY_TIPS.sauna };
+  if (has('eisbad', 'kalt', 'kälte', 'kaelte', 'eis ')) return { text: RECOVERY_TIPS.cold };
+  if (has('cardio', 'ausdauer', 'herz', 'laufen', 'joggen')) return { text: 'Ausdauertraining stärkt Herz und Kreislauf und unterstützt die Erholung. Die WHO empfiehlt 150–300 Minuten moderate oder 75–150 Minuten intensive Ausdauer pro Woche. Praktisch: 1–2× locker (Zone 2, du kannst dich noch unterhalten) und 1× Intervalle. Schreib z. B. „Plan mit Cardio“, dann baue ich es ein.' };
+  if (has('schlaf', 'erholung', 'regeneration')) return { text: recoveryTipsFor(P).join('\n\n') };
+  return { text: 'Das habe ich nicht verstanden. Ich bin ein regelbasierter Coach (keine echte KI) und verstehe z. B.:\n• „Ich will Muskeln aufbauen, Fokus Brust und Arme, 4× pro Woche“\n• „Ich will abnehmen, 3 mal 45 Minuten mit Cardio“\n• „Was trainiere ich heute?“\n• „Wie viel Protein brauche ich?“\n• „Alternative für Bankdrücken“\n• „Habe ich mich beim Latzug verbessert?“\n• „Ich bin müde“' };
+}
+
 'use strict';
 /* =====================================================================
    ATHLETIC OS – App-Logik (Phase 1)
@@ -493,8 +857,8 @@ let S = null, lsOk = true, idbOk = true;
 
 function defaults() {
   return {
-    version: 1,
-    profile: { name: '', age: 26, height: 171, weight: 71, goals: DEFAULT_GOALS.slice(), winterBreak: true, proteinGoal: 130 },
+    version: 2,
+    profile: { name: '', sex: '', age: null, height: null, weight: null, activity: 'mid', level: 'beginner', goal: 'muscle', focus: [], days: [1, 3, 5], duration: 60, equip: 'gym', cardio: true, sauna: false, cold: false, sportName: '', sportDays: [], goals: [], winterBreak: false, setupDone: false },
     settings: { autoRest: true, rir: true, sound: true, hideInstall: false },
     custom: {}, exNotes: {},
     templates: clone(DEFAULT_TEMPLATES),
@@ -511,6 +875,15 @@ function migrate(o) {
   o.settings = { ...d.settings, ...o.settings };
   o.schedule = { winter: { ...d.schedule.winter, ...(o.schedule.winter || {}) }, season: { ...d.schedule.season, ...(o.schedule.season || {}) } };
   o.sessions.sort((a, b) => a.startedAt - b.startedAt);
+  if (!o.version || o.version < 2) {
+    // Bestehende Nutzer von Version 1: Plan und Daten bleiben, Profil wird ergänzt
+    const P = o.profile;
+    Object.assign(P, { sex: P.sex || 'm', level: 'advanced', goal: 'muscle', duration: 60, equip: 'gym', cardio: true, sportName: P.sportName || 'Fussball', setupDone: true });
+    P.sportDays = [1, 2, 3, 4, 5, 6, 7].filter(d => o.schedule.season[d] === 'football');
+    P.days = [1, 2, 3, 4, 5, 6, 7].filter(d => o.templates[o.schedule.winter[d]]);
+    if (!P.goals || !P.goals.length) P.goals = DEFAULT_GOALS.slice();
+    o.version = 2;
+  }
   return o;
 }
 function idbOpen() {
@@ -558,7 +931,8 @@ function ex(id) { const b = S.custom[id] || EXMAP[id]; if (!b) return null; cons
 function allEx() { return [...EX_LIST, ...Object.values(S.custom)]; }
 function sched() { return S.profile.winterBreak ? S.schedule.winter : S.schedule.season; }
 function planFor(k) { const o = S.overrides[k]; if (o !== undefined) return S.templates[o] || o === 'rest' || o === 'football' ? o : 'rest'; const v = sched()[wdOf(k)] || 'rest'; return (v === 'rest' || v === 'football' || S.templates[v]) ? v : 'rest'; }
-function planLabel(p) { if (p === 'rest') return 'Ruhetag'; if (p === 'football') return 'Fussballtraining'; return S.templates[p]?.name || 'Ruhetag'; }
+function sportName() { return S.profile.sportName || 'Sport'; }
+function planLabel(p) { if (p === 'rest') return 'Ruhetag'; if (p === 'football') return sportName(); return S.templates[p]?.name || 'Ruhetag'; }
 function tplGroups(t) { return [...new Set(t.items.map(i => ex(i.exId)?.g).filter(Boolean))]; }
 function adjustItems(items, mode) {
   let it = clone(items);
@@ -678,12 +1052,14 @@ function render(keep) {
   const app = $('#app');
   let html;
   if (UI.tab === 'live' && !S.active) UI.tab = 'heute';
-  if (UI.tab === 'live') html = vLive();
+  if (!S.profile.setupDone && UI.tab !== 'setup') { UI.tab = 'setup'; if (!UI.wiz) wizInit(); }
+  if (UI.tab === 'setup') html = vSetup();
+  else if (UI.tab === 'live') html = vLive();
   else if (UI.tab === 'summary') html = vSummary();
   else html = VIEWS[UI.tab]();
   app.innerHTML = `<div class="view${keep ? ' nofade' : ''}">${html}</div>`;
-  app.classList.toggle('live', UI.tab === 'live');
-  $('#tabs').classList.toggle('hidden', UI.tab === 'live' || UI.tab === 'summary');
+  app.classList.toggle('live', UI.tab === 'live' || UI.tab === 'setup');
+  $('#tabs').classList.toggle('hidden', ['live', 'summary', 'setup'].includes(UI.tab));
   document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.t === UI.tab));
   window.scrollTo(0, keep ? y : 0);
 }
@@ -719,7 +1095,7 @@ function installHint() {
 }
 function vToday() {
   const k = today(), p = planFor(k), done = sessionsOn(k), A = S.active;
-  let h = `<div class="row sp"><div><div class="eyebrow">${fmtDate(k)}</div><h1>Heute</h1></div><div class="eyebrow ac">ATHLETIC OS</div></div>`;
+  let h = `<div class="row sp"><div><div class="eyebrow">${fmtDate(k)}</div><h1>${S.profile.name ? 'Hallo ' + esc(S.profile.name.split(' ')[0]) : 'Heute'}</h1></div><button class="btn sm" style="background:var(--ac2);color:#fff" data-act="coach">Coach</button></div>`;
   h += weekStrip(k) + installHint();
 
   if (A) {
@@ -748,16 +1124,19 @@ function vToday() {
       <button class="btn pri big" style="margin-top:16px" data-act="start" data-tpl="${p}">${done.length ? 'NOCHMALS STARTEN' : 'TRAINING STARTEN'}</button>
       <div class="row sp" style="margin-top:10px"><button class="link" data-act="adjust">Müde? Anpassen</button><button class="link" data-act="dayOpen" data-k="${k}">Anderes Training</button></div></div>`;
   } else if (p === 'football') {
-    h += `<div class="card hero sec"><div class="eyebrow ac">Heute</div><h1 style="font-size:28px;margin-top:6px">FUSSBALLTRAINING</h1>
+    h += `<div class="card hero sec"><div class="eyebrow ac">Heute</div><h1 style="font-size:28px;margin-top:6px">${esc(sportName().toUpperCase())}</h1>
       <ul class="mu" style="padding-left:18px;margin:12px 0 0"><li>Kein schweres Beintraining am selben Tag</li><li>Genug trinken, nach dem Training Protein und Kohlenhydrate</li><li>Optional: 10 Min. Mobilität zum Aufwärmen</li></ul>
       <button class="btn ghost" style="margin-top:16px" data-act="dayOpen" data-k="${k}">Stattdessen Gym-Einheit wählen</button></div>`;
   } else {
     h += `<div class="card hero sec"><div class="eyebrow ac">Heute</div><h1 style="font-size:28px;margin-top:6px">RUHETAG</h1>
       <p class="mu" style="margin:8px 0 0">Erholung ist Teil des Trainings – Muskeln wachsen in der Pause.</p>
       <button class="btn ghost" style="margin-top:16px" data-act="dayOpen" data-k="${k}">Stattdessen trainieren</button></div>
-      <div class="sec"><div class="sec-t"><h3>Vorschläge für heute</h3></div><div class="list">${MOBILITY.map(m => `<div class="li"><span class="dot ac"></span><span class="grow">${esc(m)}</span></div>`).join('')}</div></div>`;
+      <div class="sec"><div class="sec-t"><h3>Vorschläge für heute</h3></div><div class="list">${MOBILITY.map(m => `<div class="li"><span class="dot ac"></span><span class="grow">${esc(m)}</span></div>`).join('')}</div></div>
+      ${S.profile.sauna || S.profile.cold ? `<div class="sec stack">${[S.profile.sauna && RECOVERY_TIPS.sauna, S.profile.cold && RECOVERY_TIPS.cold].filter(Boolean).map(x => `<div class="note">${esc(x)}</div>`).join('')}</div>` : ''}`;
   }
 
+  const nu = nutritionOf(S.profile);
+  if (nu) h += `<button class="card tight tap sec row sp" style="width:100%;text-align:left" data-act="tab" data-t="food"><div><div class="xs mu b">TAGESZIEL ERNÄHRUNG</div><div class="b" style="margin-top:4px;font-size:18px">${nu.kcal.toLocaleString('de-CH')} kcal · ${nu.protein} g Protein</div></div><span class="chev">›</span></button>`;
   h += `<div class="sec"><div class="sec-t"><h3>Erholung</h3><span class="xs mu">Einschätzung, keine Messung</span></div>
     <div class="card tight"><div class="row sp"><span class="pill ${rec.c}">${rec.l}</span></div>
     <div style="margin-top:10px">${esc(rec.t)}</div><div class="hint">${rec.why.map(esc).join(' · ')} — hör zusätzlich auf dein Körpergefühl.</div></div></div>`;
@@ -781,7 +1160,7 @@ function vToday() {
 
 /* ---------- Ansicht: TRAININGSPLAN ---------- */
 function vPlan() {
-  let h = `<div class="eyebrow">${S.profile.winterBreak ? 'Modus: Winterpause' : 'Modus: Fussball-Saison'}</div><h1>Trainingsplan</h1>
+  let h = `<div class="row sp"><div><div class="eyebrow">${S.profile.winterBreak ? (S.profile.sportDays?.length ? 'Modus: Sport-Pause' : 'Dein Plan') : 'Modus: mit ' + esc(sportName())}</div><h1>Trainingsplan</h1></div><button class="btn sm" style="background:var(--ac2);color:#fff" data-act="coach">Coach</button></div>
     <div class="seg"><button class="${UI.planSeg === 'cal' ? 'on' : ''}" data-act="seg" data-k="planSeg" data-v="cal">Kalender</button>
     <button class="${UI.planSeg === 'units' ? 'on' : ''}" data-act="seg" data-k="planSeg" data-v="units">Einheiten</button>
     <button class="${UI.planSeg === 'lib' ? 'on' : ''}" data-act="seg" data-k="planSeg" data-v="lib">Übungen</button></div>`;
@@ -795,15 +1174,15 @@ function vPlan() {
       const d = addDays(start, i), p = planFor(d), ss = sessionsOn(d), t = S.templates[p];
       let status = '';
       if (ss.length) status = '<span class="pill ok">✓ Erledigt</span>';
-      else if (p === 'football') status = '<span class="pill warn">Fussball</span>';
+      else if (p === 'football') status = `<span class="pill warn">${esc(sportName())}</span>`;
       else if (t && d < k0) status = '<span class="pill">Offen</span>';
       else if (t) status = `<span class="pill ac">${tplMinutes(t, S.adjust[d])} Min.</span>`;
-      const sub = ss.length ? ss.map(s => esc(s.name)).join(', ') : t ? tplGroups(t).join(' · ') : p === 'football' ? 'Team-Training' : 'Erholung & Mobilität';
+      const sub = ss.length ? ss.map(s => esc(s.name)).join(', ') : t ? tplGroups(t).join(' · ') : p === 'football' ? 'Sport-Termin' : 'Erholung & Mobilität';
       h += `<button class="cal-day${d === k0 ? ' today' : ''}" data-act="dayOpen" data-k="${d}"><div class="cal-date"><div class="d">${WD[i + 1]}</div><div class="n">${parseDk(d).getDate()}</div></div>
         <div class="grow"><div class="b">${esc(ss.length ? 'Training' : planLabel(p))}${S.overrides[d] !== undefined ? ' <span class="xs ac">• verschoben</span>' : ''}</div><div class="sm mu">${sub}</div></div>${status}</button>`;
     }
-    h += `</div><button class="btn ghost" style="margin-top:14px" data-act="schedEdit">Wochenplan bearbeiten</button>
-      <p class="hint">Tippe auf einen Tag, um das Training zu ändern, zu verschieben oder einen Ruhetag festzulegen. Der Standardplan wechselt Ober- und Unterkörper ab, damit jede Muskelgruppe 2× pro Woche trainiert wird und mind. 48 h Erholung hat.</p>`;
+    h += `</div><div class="row" style="margin-top:14px"><button class="btn ghost" data-act="schedEdit">Wochenplan bearbeiten</button><button class="btn ghost" data-act="wizStart">Neu erstellen</button></div>
+      <p class="hint">Tippe auf einen Tag, um das Training zu ändern, zu verschieben oder einen Ruhetag festzulegen. Jede Muskelgruppe wird ca. 2× pro Woche trainiert, mit mind. 48 h Erholung dazwischen.</p>`;
   } else if (UI.planSeg === 'units') {
     h += '<div class="stack">';
     for (const t of Object.values(S.templates)) {
@@ -964,31 +1343,58 @@ function chartSvg(pts, label) {
 
 /* ---------- Ansicht: ERNÄHRUNG ---------- */
 function vNutrition() {
-  return `<div class="eyebrow">Phase 3</div><h1>Ernährung</h1>
-    <div class="card sec"><span class="pill warn">Noch nicht verfügbar</span><h3 style="margin-top:12px">Folgt in Phase 3</h3>
-    <p class="mu">Damit Phase 1 sauber funktioniert, ist dieser Bereich bewusst noch leer. Geplant:</p>
-    <ul class="mu" style="padding-left:18px"><li>Proteinziel (aktuell ${S.profile.proteinGoal} g/Tag) mit Tagesfortschritt</li><li>Mahlzeiten und eigene Lebensmittel speichern</li><li>Kalorien optional</li><li>Unbekannte Nährwerte werden als Schätzung markiert</li></ul></div>`;
+  const P = S.profile, n = nutritionOf(P);
+  let h = `<div class="eyebrow">Deine Richtwerte</div><h1>Ernährung</h1>`;
+  if (!n) return h + `<div class="card sec empty">Trag im Profil Alter, Grösse und Gewicht ein, dann berechne ich deine Werte.<button class="btn pri" style="margin-top:14px" data-act="tab" data-t="profil">Zum Profil</button></div>`;
+  h += `<div class="card hero sec"><div class="eyebrow ac">Tagesziel · ${esc(GOALS[P.goal]?.l || '')}</div>
+    <div style="font-size:44px;font-weight:800;letter-spacing:-.02em;margin-top:6px">${n.kcal.toLocaleString('de-CH')} <span style="font-size:20px;color:var(--mu)">kcal</span></div>
+    <div class="stats"><div class="stat"><div class="v">${n.protein} g</div><div class="l">Protein</div></div><div class="stat"><div class="v">${n.carbs} g</div><div class="l">Kohlenhydrate</div></div><div class="stat"><div class="v">${n.fat} g</div><div class="l">Fett</div></div></div>
+    <div class="sm mu" style="margin-top:12px">Wasser: ca. ${num(n.water)} L pro Tag, an Trainingstagen 0,5–1 L mehr.</div></div>
+    <div class="stack sec">${n.notes.map(x => `<div class="note">${esc(x)}</div>`).join('')}</div>`;
+  if (n.bmi) h += `<div class="card sec"><div class="row sp"><h3>BMI</h3><span class="pill ${n.bmi.c}">${n.bmi.l}</span></div>
+    <div style="font-size:34px;font-weight:800;margin-top:6px">${num(n.bmi.v)}</div>
+    <div class="bar" style="margin-top:10px;background:linear-gradient(90deg,#f2b84b 0 14%,#3ecf8e 14% 46%,#f2b84b 46% 67%,#ef6461 67%)"><i style="width:3px;margin-left:${Math.max(0, Math.min(99, (n.bmi.v - 15) / 25 * 100))}%;background:#fff"></i></div>
+    <div class="row sp xs mu" style="margin-top:4px"><span>15</span><span>18,5</span><span>25</span><span>30</span><span>40</span></div>
+    <p class="hint">Der BMI unterscheidet nicht zwischen Muskeln und Fett. Bei viel Muskelmasse fällt er oft zu hoch aus – Bauchumfang und Spiegel sind dann aussagekräftiger.</p></div>`;
+  h += `<div class="card sec"><h3>So wird gerechnet</h3><table class="t" style="margin-top:8px">
+    <tr><td>Grundumsatz (Mifflin-St Jeor)</td><td class="b">${n.bmr.toLocaleString('de-CH')} kcal</td></tr>
+    <tr><td>Gesamtumsatz inkl. Alltag & Training</td><td class="b">${n.tdee.toLocaleString('de-CH')} kcal</td></tr>
+    <tr><td>Protein pro kg Körpergewicht</td><td class="b">${num(n.gkg)} g</td></tr></table>
+    <p class="hint">Alle Werte sind Schätzungen (±10–15 %). Wiege dich 2–3 Wochen lang regelmässig (morgens, gleiche Bedingungen) und passe die Kalorien dann um 100–200 kcal an.</p>
+    <p class="hint">Protein am besten auf 3–5 Mahlzeiten verteilen, z. B. je 25–40 g.</p></div>
+    <div class="card sec"><span class="pill warn">Folgt in Phase 3</span><p class="mu" style="margin-bottom:0">Mahlzeiten-Tagebuch mit Tagesfortschritt und eigenen Lebensmitteln. Unbekannte Nährwerte werden dann als Schätzung markiert.</p></div>`;
+  return h;
 }
 
 /* ---------- Ansicht: PROFIL ---------- */
 function vProfile() {
-  const P = S.profile, st = S.settings;
+  const P = S.profile, st = S.settings, n = nutritionOf(P);
   const tog = (path, on, label, sub) => `<button class="li" data-act="tog" data-k="${path}"><span class="grow"><div class="b">${label}</div>${sub ? `<div class="sm mu">${sub}</div>` : ''}</span><span class="toggle${on ? ' on' : ''}"></span></button>`;
-  const fld = (f, label, unit, mode = 'decimal') => `<div class="field"><label>${label}${unit ? ' (' + unit + ')' : ''}</label><input inputmode="${mode}" value="${esc(P[f])}" data-inp="prof" data-f="${f}"></div>`;
+  const fld = (f, label, unit, mode = 'decimal') => `<div class="field"><label>${label}${unit ? ' (' + unit + ')' : ''}</label><input inputmode="${mode}" value="${esc(P[f] ?? '')}" data-inp="prof" data-f="${f}"></div>`;
   const standalone = window.navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
-  return `<div class="eyebrow">Einstellungen</div><h1>Profil</h1>
+  return `<div class="eyebrow">Einstellungen</div><h1>${esc(P.name || 'Profil')}</h1>
     <div class="card sec"><h3>Körperdaten</h3>
-      <div class="field"><label>Name (optional)</label><input value="${esc(P.name)}" data-inp="prof" data-f="name"></div>
-      <div class="row">${fld('age', 'Alter', 'Jahre', 'numeric')}${fld('height', 'Grösse', 'cm', 'numeric')}${fld('weight', 'Gewicht', 'kg')}</div>
-      ${fld('proteinGoal', 'Proteinziel', 'g/Tag', 'numeric')}</div>
-    <div class="card sec"><h3>Ziele</h3><p class="hint">Eine Zeile pro Ziel.</p><textarea rows="7" data-inp="goals">${esc(P.goals.join('\n'))}</textarea></div>
-    <div class="sec"><div class="sec-t"><h3>Fussball</h3></div><div class="list">
-      ${tog('profile.winterBreak', P.winterBreak, 'Winterpause', P.winterBreak ? 'Plan ohne Fussball, mehr Gym-Einheiten' : 'Saison-Plan mit Fussballtagen aktiv')}
-      <div class="li" style="display:block"><div class="sm mu" style="margin-bottom:8px">Fussballtage in der Saison</div><div class="daychips">${[1, 2, 3, 4, 5, 6, 7].map(d => `<button class="${S.schedule.season[d] === 'football' ? 'on' : ''}" data-act="fbDay" data-d="${d}">${WD[d]}</button>`).join('')}</div></div></div></div>
+      <div class="field"><label>Name</label><input value="${esc(P.name)}" data-inp="prof" data-f="name"></div>
+      <div class="field"><label>Geschlecht (für die Kalorienformel)</label><div class="daychips">${[['m', 'Mann'], ['f', 'Frau'], ['x', 'Keine Angabe']].map(([v, l]) => `<button class="${P.sex === v ? 'on' : ''}" data-act="profSet" data-f="sex" data-v="${v}">${l}</button>`).join('')}</div></div>
+      <div class="row">${fld('age', 'Alter', 'J.', 'numeric')}${fld('height', 'Grösse', 'cm', 'numeric')}${fld('weight', 'Gewicht', 'kg')}</div>
+      <div class="field"><label>Aktivität im Alltag</label><select data-inp="profSel" data-f="activity">${Object.entries(ACTIVITIES).map(([k, a]) => `<option value="${k}"${P.activity === k ? ' selected' : ''}>${a.l} – ${a.s}</option>`).join('')}</select></div>
+      ${n ? `<button class="opt" style="margin-top:14px" data-act="tab" data-t="food"><span class="grow"><div class="b">BMI ${num(n.bmi.v)} · ${n.kcal.toLocaleString('de-CH')} kcal · ${n.protein} g Protein</div><div class="sm mu">Details unter Ernährung</div></span><span class="chev">›</span></button>` : ''}</div>
+    <div class="card sec"><h3>Trainingsziel</h3>
+      <div class="sm" style="margin-top:8px">${esc(GOALS[P.goal]?.l || '–')}${P.focus?.length ? ' · Fokus: ' + esc(P.focus.join(', ')) : ''}</div>
+      <div class="sm mu" style="margin-top:4px">${(P.days || []).length}× pro Woche · ${P.duration} Min. · ${esc(EQUIP[P.equip]?.l || '')} · ${esc(LEVELS[P.level]?.l || '')}${P.cardio ? ' · mit Cardio' : ''}</div>
+      <button class="btn pri" style="margin-top:14px" data-act="wizStart">Plan neu erstellen (Assistent)</button>
+      <button class="btn ghost" style="margin-top:8px" data-act="coach">Coach fragen</button></div>
+    <div class="card sec"><h3>Persönliche Ziele</h3><p class="hint">Eine Zeile pro Ziel.</p><textarea rows="5" data-inp="goals">${esc((P.goals || []).join('\n'))}</textarea></div>
+    <div class="sec"><div class="sec-t"><h3>Sport-Termine</h3></div><div class="list">
+      <div class="li" style="display:block"><div class="sm mu" style="margin-bottom:6px">Sportart (z. B. Fussball)</div><input value="${esc(P.sportName)}" placeholder="optional" data-inp="prof" data-f="sportName"></div>
+      <div class="li" style="display:block"><div class="sm mu" style="margin-bottom:8px">Feste Sporttage</div><div class="daychips">${[1, 2, 3, 4, 5, 6, 7].map(d => `<button class="${S.schedule.season[d] === 'football' ? 'on' : ''}" data-act="fbDay" data-d="${d}">${WD[d]}</button>`).join('')}</div></div>
+      ${tog('profile.winterBreak', P.winterBreak, 'Sport-Pause (z. B. Winterpause)', P.winterBreak ? 'Sporttage werden im Plan nicht angezeigt' : 'Sporttage sind im Plan aktiv')}</div></div>
     <div class="sec"><div class="sec-t"><h3>Training</h3></div><div class="list">
       ${tog('settings.autoRest', st.autoRest, 'Pausentimer automatisch', 'Startet nach jedem erledigten Satz')}
       ${tog('settings.sound', st.sound, 'Ton am Pausenende', 'Bei Stummschaltung des iPhones ggf. nicht hörbar')}
-      ${tog('settings.rir', st.rir, 'RIR erfassen (optional)', 'Wiederholungen in Reserve – verbessert die Steigerungsvorschläge')}</div></div>
+      ${tog('settings.rir', st.rir, 'RIR erfassen (optional)', 'Wiederholungen in Reserve – verbessert die Steigerungsvorschläge')}
+      ${tog('profile.sauna', P.sauna, 'Sauna-Empfehlungen', 'Hinweise an Ruhetagen')}
+      ${tog('profile.cold', P.cold, 'Eisbad-Empfehlungen', 'Hinweise an Ruhetagen')}</div></div>
     <div class="sec"><div class="sec-t"><h3>Daten & Speicher</h3></div><div class="card">
       <div class="sm">${standalone ? '<span class="pill ok">Als App installiert</span>' : '<span class="pill warn">Im Browser geöffnet</span>'} <span class="pill ${lsOk || idbOk ? 'ok' : 'bad'}">${lsOk || idbOk ? 'Speicher aktiv' : 'Speicher nicht verfügbar'}</span></div>
       <p class="sm mu">Alle Daten liegen nur auf diesem Gerät (kein Konto, keine Cloud). ${S.sessions.length} Trainings gespeichert · zuletzt gesichert ${S.savedAt ? new Date(S.savedAt).toLocaleString('de-CH') : '–'}.</p>
@@ -996,7 +1402,134 @@ function vProfile() {
       <div class="stack" style="margin-top:12px"><button class="btn" data-act="export">Backup exportieren</button>
       <label class="btn ghost" style="cursor:pointer">Backup importieren<input type="file" accept="application/json,.json" data-inp="import" style="display:none"></label>
       <button class="btn danger" data-act="wipe">Alle Daten löschen</button></div></div></div>
-    <p class="hint" style="text-align:center;margin-top:20px">ATHLETIC OS · Phase 1 · v1.0</p>`;
+    <p class="hint" style="text-align:center;margin-top:20px">ATHLETIC OS · v2.0 · Empfehlungen sind allgemeine Richtwerte, keine medizinische Beratung.</p>`;
+}
+
+/* ---------- Einrichtungs-Assistent ---------- */
+const WIZ_STEPS = ['start', 'body', 'life', 'goal', 'focus', 'train', 'extras', 'result'];
+function wizInit() {
+  const P = S.profile;
+  UI.wiz = { step: 0, d: clone({ ...P, focus: P.focus || [], days: P.days?.length ? P.days : [1, 3, 5], sportDays: P.sportDays || [] }) };
+}
+function wizChips(f, opts, multi) {
+  const d = UI.wiz.d;
+  return opts.map(([v, l, s]) => { const on = multi ? (d[f] || []).includes(v) : d[f] === v; return `<button class="opt${on ? ' on' : ''}" data-act="${multi ? 'wizTog' : 'wizSet'}" data-f="${f}" data-v="${v}"><span class="grow"><div class="b">${l}</div>${s ? `<div class="sm mu">${s}</div>` : ''}</span>${on ? '<span class="ac b">✓</span>' : ''}</button>`; }).join('');
+}
+function wizDays(f, note) {
+  const d = UI.wiz.d;
+  return `<div class="daychips">${[1, 2, 3, 4, 5, 6, 7].map(x => `<button class="${(d[f] || []).includes(x) ? 'on' : ''}" data-act="wizTog" data-f="${f}" data-v="${x}">${WD[x]}</button>`).join('')}</div>${note ? `<p class="hint">${note}</p>` : ''}`;
+}
+function wizBmi() { const b = bmiOf(UI.wiz.d); return b ? `BMI: <b>${num(b.v)}</b> <span class="pill ${b.c}">${b.l}</span>` : 'BMI erscheint nach Eingabe von Grösse und Gewicht.'; }
+function vSetup() {
+  const w = UI.wiz, d = w.d, step = WIZ_STEPS[w.step];
+  const titles = { start: 'Willkommen', body: 'Deine Körperdaten', life: 'Alltag & Erfahrung', goal: 'Was ist dein Ziel?', focus: 'Worauf willst du dich fokussieren?', train: 'Dein Training', extras: 'Ausdauer & Erholung', result: 'Dein Plan' };
+  const inp = (f, label, unit, mode) => `<div class="field grow"><label>${label}${unit ? ' (' + unit + ')' : ''}</label><input inputmode="${mode}" value="${esc(d[f] ?? '')}" data-inp="wiz" data-f="${f}" data-live="wizbody" autocomplete="off"></div>`;
+  let h = `<div class="row sp"><div class="eyebrow">Schritt ${w.step + 1} von ${WIZ_STEPS.length}</div>${S.profile.setupDone ? '<button class="link" data-act="wizCancel">Abbrechen</button>' : ''}</div>
+    <div class="bar" style="margin-top:8px"><i style="width:${(w.step + 1) / WIZ_STEPS.length * 100}%"></i></div><h1 style="margin-top:16px">${titles[step]}</h1>`;
+  if (step === 'start') h += `<p class="mu">ATHLETIC OS erstellt dir in 2 Minuten einen persönlichen Trainingsplan – passend zu deinem Ziel, deiner Zeit und deiner Ausrüstung. Dazu berechnet die App deinen BMI sowie deinen Kalorien- und Proteinbedarf.</p>
+    <div class="field"><label>Wie heisst du?</label><input value="${esc(d.name)}" data-inp="wiz" data-f="name" placeholder="Vorname" autocomplete="given-name"></div>
+    <div class="note sec">🔒 Deine Angaben bleiben nur auf diesem Handy gespeichert – kein Konto, keine Cloud.</div>`;
+  if (step === 'body') h += `<div class="field"><label>Geschlecht (für die Kalorienformel)</label><div class="daychips">${[['m', 'Mann'], ['f', 'Frau'], ['x', 'Keine Angabe']].map(([v, l]) => `<button class="${d.sex === v ? 'on' : ''}" data-act="wizSet" data-f="sex" data-v="${v}">${l}</button>`).join('')}</div></div>
+    <div class="row">${inp('age', 'Alter', 'Jahre', 'numeric')}${inp('height', 'Grösse', 'cm', 'numeric')}</div>${inp('weight', 'Gewicht', 'kg', 'decimal')}
+    <div class="card tight sec" id="wiz-bmi">${wizBmi()}</div>`;
+  if (step === 'life') h += `<div class="sec-t" style="margin-top:14px"><span class="eyebrow">Aktivität im Alltag (ohne Training)</span></div>${wizChips('activity', Object.entries(ACTIVITIES).map(([k, a]) => [k, a.l, a.s]))}
+    <div class="sec-t" style="margin-top:20px"><span class="eyebrow">Trainingserfahrung</span></div>${wizChips('level', Object.entries(LEVELS).map(([k, a]) => [k, a.l, a.s]))}`;
+  if (step === 'goal') h += `<p class="mu">Davon hängen Trainingsplan, Wiederholungsbereiche und Kalorien ab.</p>${wizChips('goal', Object.entries(GOALS).map(([k, a]) => [k, a.l, a.s]))}`;
+  if (step === 'focus') h += `<p class="mu">Wähle bis zu 3 Schwerpunkte. Diese bekommen zusätzliche Sätze und Übungen. Keine Auswahl = ausgewogener Plan.</p>${wizChips('focus', FOCUS_LIST.map(f => [f, f]), true)}`;
+  if (step === 'train') h += `<div class="sec-t" style="margin-top:14px"><span class="eyebrow">An welchen Tagen trainierst du? (2–6)</span></div>${wizDays('days', `${(d.days || []).length} Trainingstage gewählt`)}
+    <div class="sec-t" style="margin-top:18px"><span class="eyebrow">Zeit pro Training</span></div><div class="daychips">${DURATIONS.map(m => `<button class="${d.duration === m ? 'on' : ''}" data-act="wizSet" data-f="duration" data-v="${m}">${m} Min.</button>`).join('')}</div>
+    <div class="sec-t" style="margin-top:18px"><span class="eyebrow">Wo trainierst du?</span></div>${wizChips('equip', Object.entries(EQUIP).map(([k, a]) => [k, a.l, a.s]))}
+    <div class="sec-t" style="margin-top:18px"><span class="eyebrow">Andere Sport-Termine (optional)</span></div>
+    <input value="${esc(d.sportName || '')}" placeholder="Sportart, z. B. Fussball" data-inp="wiz" data-f="sportName">
+    <div style="margin-top:10px">${wizDays('sportDays', 'Feste Sporttage werden im Plan berücksichtigt – z. B. kein schweres Beintraining am Tag davor.')}</div>`;
+  if (step === 'extras') {
+    const b = (f, l, s, rec) => `<button class="opt${d[f] ? ' on' : ''}" data-act="wizBool" data-f="${f}"><span class="grow"><div class="b">${l}${rec ? ' <span class="pill ac">empfohlen</span>' : ''}</div><div class="sm mu">${s}</div></span><span class="toggle${d[f] ? ' on' : ''}"></span></button>`;
+    h += b('cardio', 'Cardio einplanen', 'Gut für Herz, Kreislauf und Ausdauer. Die WHO empfiehlt 150–300 Minuten moderate Ausdauer pro Woche.', true)
+      + b('sauna', 'Sauna-Empfehlungen', 'Hinweise zu Dauer, Häufigkeit und Sicherheit an Ruhetagen.')
+      + b('cold', 'Eisbad / Kälte-Empfehlungen', 'Hinweise zu Dauer, Zeitpunkt und Sicherheit.')
+      + (d.sportDays?.length ? b('winterBreak', `Gerade Pause von ${esc(d.sportName || 'Sport')}`, 'z. B. Winterpause – Sporttage werden dann vorerst nicht angezeigt.') : '')
+      + `<p class="hint">Schlaf, Spaziergänge und Mobilität sind immer Teil der Erholungsempfehlungen.</p>`;
+  }
+  if (step === 'result') {
+    const n = nutritionOf(d), plan = w.plan = generatePlan(d);
+    const lbl = v => v === 'rest' ? 'Ruhetag' : v === 'football' ? esc(d.sportName || 'Sport') : esc(plan.templates[v]?.name);
+    const sch = d.winterBreak || !d.sportDays?.length ? plan.schedule.winter : plan.schedule.season;
+    h += `<div class="card hero sec"><div class="eyebrow ac">${esc(GOALS[d.goal].l)}</div>
+      <div class="stats"><div class="stat"><div class="v">${n.bmi ? num(n.bmi.v) : '–'}</div><div class="l">BMI${n.bmi ? ' · ' + n.bmi.l : ''}</div></div><div class="stat"><div class="v">${n.kcal.toLocaleString('de-CH')}</div><div class="l">kcal pro Tag</div></div><div class="stat"><div class="v">${n.protein} g</div><div class="l">Protein pro Tag</div></div></div>
+      <p class="sm" style="margin:12px 0 0">${esc(plan.split)}</p></div>
+      <div class="stack sec">${n.notes.concat(plan.notes).map(x => `<div class="note">${esc(x)}</div>`).join('')}</div>
+      <div class="sec"><div class="sec-t"><h3>Deine Woche</h3></div><div class="list">${[1, 2, 3, 4, 5, 6, 7].map(x => { const v = sch[x], t = plan.templates[v]; return `<div class="cal-day"><div class="cal-date"><div class="d">${WD[x]}</div></div><div class="grow"><div class="b">${lbl(v)}</div><div class="sm mu">${t ? tplGroups(t).join(' · ') + ' · ' + t.items.length + ' Übungen' : v === 'rest' ? 'Erholung & Mobilität' : ''}</div></div></div>`; }).join('')}</div></div>
+      <div class="sec"><div class="sec-t"><h3>Erholung</h3></div><div class="stack">${recoveryTipsFor(d).map(x => `<div class="note">${esc(x)}</div>`).join('')}</div></div>
+      <p class="hint">Alle Werte sind Richtwerte für gesunde Erwachsene und ersetzen keine ärztliche Beratung. Plan und Übungen kannst du jederzeit anpassen.</p>`;
+  }
+  const last = w.step === WIZ_STEPS.length - 1;
+  h += `<div class="live-nav"><div class="inner">${w.step > 0 ? '<button class="btn" style="flex:0 0 30%" data-act="wizBack">‹ Zurück</button>' : ''}<button class="btn pri" data-act="${last ? 'wizSave' : 'wizNext'}">${last ? 'Plan speichern & starten' : w.step === 0 ? 'Los geht’s' : 'Weiter'}</button></div></div>`;
+  return h;
+}
+function wizRead() {
+  document.querySelectorAll('input[data-inp="wiz"]').forEach(el => {
+    const f = el.dataset.f;
+    if (f === 'name' || f === 'sportName') UI.wiz.d[f] = el.value.trim().slice(0, 40);
+    else { const v = parseNum(el.value); UI.wiz.d[f] = isNaN(v) ? null : v; }
+  });
+}
+function wizValid() {
+  const d = UI.wiz.d, s = WIZ_STEPS[UI.wiz.step];
+  if (s === 'start' && !d.name) return 'Bitte gib deinen Namen ein.';
+  if (s === 'body') {
+    if (!d.sex) return 'Bitte wähle eine Option beim Geschlecht.';
+    if (!(d.age >= 14 && d.age <= 99)) return 'Bitte ein Alter zwischen 14 und 99 eingeben.';
+    if (!(d.height >= 120 && d.height <= 230)) return 'Bitte eine Grösse zwischen 120 und 230 cm eingeben.';
+    if (!(d.weight >= 30 && d.weight <= 250)) return 'Bitte ein Gewicht zwischen 30 und 250 kg eingeben.';
+  }
+  if (s === 'train') {
+    if ((d.days || []).length < 2 || d.days.length > 6) return 'Bitte 2 bis 6 Trainingstage wählen.';
+    if (d.sportDays?.length && !d.sportName) d.sportName = 'Sport';
+  }
+  return null;
+}
+async function applyPlan(prefs, plan) {
+  if (S.sessions.length && !(await ask('Neuen Plan übernehmen?', 'Deine bisherigen Einheiten und der Wochenplan werden ersetzt. Gespeicherte Trainings und Fortschritte bleiben erhalten.', 'Übernehmen'))) return false;
+  const k = today();
+  Object.assign(S.profile, prefs, { setupDone: true });
+  if (!S.profile.sportDays?.length) S.profile.winterBreak = true;
+  S.templates = plan.templates; S.schedule = plan.schedule;
+  for (const x in S.overrides) if (x >= k) delete S.overrides[x];
+  for (const x in S.adjust) if (x >= k) delete S.adjust[x];
+  save(); return true;
+}
+
+/* ---------- Coach ---------- */
+UI.chat = [];
+function chatHtml() {
+  const msgs = UI.chat.map((m, i) => {
+    if (m.from === 'me') return `<div style="display:flex;justify-content:flex-end;margin-top:10px"><div style="background:var(--ac2);color:#fff;padding:10px 14px;border-radius:16px 16px 4px 16px;max-width:85%">${esc(m.text)}</div></div>`;
+    let x = `<div style="margin-top:10px;background:var(--s2);padding:12px 14px;border-radius:16px 16px 16px 4px;max-width:92%">${esc(m.text).replace(/\n/g, '<br>')}`;
+    if (m.plan) {
+      const sch = m.prefs.winterBreak || !m.prefs.sportDays?.length ? m.plan.schedule.winter : m.plan.schedule.season;
+      x += `<div class="list" style="margin-top:10px">${[1, 2, 3, 4, 5, 6, 7].map(d => { const v = sch[d], t = m.plan.templates[v]; return `<div class="li" style="min-height:40px;padding:8px 12px"><span class="b" style="width:28px">${WD[d]}</span><span class="grow sm">${t ? esc(t.name) + ' <span class="mu">· ' + t.items.length + ' Üb.</span>' : v === 'football' ? esc(m.prefs.sportName || 'Sport') : '<span class="mu">Ruhetag</span>'}</span></div>`; }).join('')}</div>
+        ${m.applied ? '<div class="pill ok" style="margin-top:10px">✓ Übernommen</div>' : `<button class="btn sm" style="margin-top:10px;background:var(--ac);color:#04201d;width:100%" data-act="coachApply" data-i="${i}">Plan übernehmen</button>`}`;
+    }
+    return x + '</div>';
+  }).join('');
+  return msgs || `<div class="mu sm" style="margin-top:8px">Schreib in normalen Worten, was du willst – z. B. „Ich will Muskeln aufbauen, Fokus Brust und Arme, 4× pro Woche à 60 Minuten“.</div>`;
+}
+function openCoach() {
+  const q = ['Was trainiere ich heute?', 'Mehr Fokus auf Brust und Arme', 'Ich will abnehmen, 3× pro Woche mit Cardio', 'Wie viel Protein brauche ich?', 'Ich bin müde – Ruhetag?', 'Alternative für Bankdrücken'];
+  openSheet(`<h2>Coach</h2><p class="xs mu" style="margin-top:4px">Regelbasierter Coach auf Basis deiner Daten – keine echte KI. Antworten sind allgemeine Richtwerte.</p>
+    <div class="chips" style="margin:10px -16px 0">${q.map(x => `<button class="chip" style="font-weight:600" data-act="coachAsk" data-q="${esc(x)}">${esc(x)}</button>`).join('')}</div>
+    <div id="chat" style="min-height:120px">${chatHtml()}</div>
+    <div class="row" style="position:sticky;bottom:calc(-1 * (var(--safe-b) + 20px));background:var(--s1);padding:12px 0 calc(var(--safe-b) + 8px);margin-top:10px"><input id="coach-in" placeholder="Frag deinen Coach …" autocomplete="off" enterkeyhint="send"><button class="btn sm pri" style="height:48px" data-act="coachSend">Senden</button></div>`);
+  const sh = $('#sheet'); setTimeout(() => sh.scrollTop = sh.scrollHeight, 50);
+}
+function coachSend(text) {
+  text = String(text || '').trim(); if (!text) return;
+  UI.chat.push({ from: 'me', text });
+  const r = coachReply(text);
+  UI.chat.push({ from: 'coach', text: r.text, plan: r.plan, prefs: r.prefs });
+  $('#chat').innerHTML = chatHtml();
+  const inp = $('#coach-in'); if (inp) inp.value = '';
+  const sh = $('#sheet'); setTimeout(() => sh.scrollTop = sh.scrollHeight, 30);
 }
 
 const VIEWS = { heute: vToday, plan: vPlan, prog: vProgress, food: vNutrition, profil: vProfile };
@@ -1010,7 +1543,7 @@ function sheetDay(k) {
   if (isToday && S.templates[p] && !S.active) h += `<button class="btn pri" style="margin-top:14px" data-act="start" data-tpl="${p}">Training starten</button>`;
   h += `<div class="sec-t" style="margin-top:18px"><span class="eyebrow">Für diesen Tag planen</span></div>`;
   h += Object.values(S.templates).map(t => opt(t.id, t.name, tplGroups(t).join(' · '))).join('');
-  h += opt('football', 'Fussballtraining') + opt('rest', 'Ruhetag', 'Erholung, Spaziergang, Mobilität');
+  h += opt('football', sportName()) + opt('rest', 'Ruhetag', 'Erholung, Spaziergang, Mobilität');
   h += `<button class="opt" data-act="swapStart" data-k="${k}"><span class="grow b">Mit anderem Tag tauschen</span><span class="chev">›</span></button>`;
   if (S.overrides[k] !== undefined) h += `<button class="btn ghost" style="margin-top:12px" data-act="resetDay" data-k="${k}">Zurück zum Wochenplan</button>`;
   openSheet(h);
@@ -1072,9 +1605,9 @@ function sheetExNew() {
     <button class="btn pri" style="margin-top:16px" data-act="exSave">Speichern</button>`);
 }
 function sheetSched() {
-  const sel = (mode, d) => { const v = S.schedule[mode][d]; return `<select data-inp="sched" data-mode="${mode}" data-d="${d}">${Object.values(S.templates).map(t => `<option value="${t.id}"${v === t.id ? ' selected' : ''}>${esc(t.name)}</option>`).join('')}<option value="football"${v === 'football' ? ' selected' : ''}>Fussballtraining</option><option value="rest"${v === 'rest' || !v ? ' selected' : ''}>Ruhetag</option></select>`; };
+  const sel = (mode, d) => { const v = S.schedule[mode][d]; return `<select data-inp="sched" data-mode="${mode}" data-d="${d}">${Object.values(S.templates).map(t => `<option value="${t.id}"${v === t.id ? ' selected' : ''}>${esc(t.name)}</option>`).join('')}<option value="football"${v === 'football' ? ' selected' : ''}>${esc(sportName())}</option><option value="rest"${v === 'rest' || !v ? ' selected' : ''}>Ruhetag</option></select>`; };
   const block = (mode, title) => `<div class="sec"><h3>${title}${(mode === 'winter') === S.profile.winterBreak ? ' <span class="pill ac">aktiv</span>' : ''}</h3>${[1, 2, 3, 4, 5, 6, 7].map(d => `<div class="row" style="margin-top:8px"><span class="b" style="width:34px">${WD[d]}</span>${sel(mode, d)}</div>`).join('')}</div>`;
-  openSheet(`<h2>Wochenplan</h2><p class="hint">Gilt für jede Woche. Einzelne Tage verschiebst du direkt im Kalender. Zwischen Winterpause und Saison wechselst du im Profil.</p>${block('winter', 'Winterpause')}${block('season', 'Fussball-Saison')}<button class="btn pri" style="margin-top:18px" data-act="closeSheet">Fertig</button>`);
+  openSheet(`<h2>Wochenplan</h2><p class="hint">Gilt für jede Woche. Einzelne Tage verschiebst du direkt im Kalender. Zwischen den beiden Plänen wechselst du im Profil („Sport-Pause“).</p>${block('winter', 'Ohne Sport-Termine / Pause')}${block('season', 'Mit ' + esc(sportName()))}<button class="btn pri" style="margin-top:18px" data-act="closeSheet">Fertig</button>`);
 }
 function sheetSession(id) {
   const s = S.sessions.find(x => x.id === id); if (!s) return;
@@ -1248,13 +1781,37 @@ const ACT = {
   sessDel: async d => { if (!(await ask('Training löschen?', 'Das Training und alle Sätze werden endgültig entfernt.', 'Löschen', true))) return; S.sessions = S.sessions.filter(s => s.id !== d.id); save(); render(true); toast('Training gelöscht'); },
   progEx: d => sheetProgEx(d.id),
 
+
+  /* Assistent */
+  wizStart: () => { wizInit(); closeSheetSilent(); UI.tab = 'setup'; render(); },
+  wizCancel: () => { UI.wiz = null; UI.tab = 'profil'; render(); },
+  wizSet: d => { wizRead(); const v = isNaN(+d.v) ? d.v : +d.v; UI.wiz.d[d.f] = v; render(true); },
+  wizBool: d => { wizRead(); UI.wiz.d[d.f] = !UI.wiz.d[d.f]; render(true); },
+  wizTog: d => {
+    wizRead(); const w = UI.wiz.d, v = isNaN(+d.v) ? d.v : +d.v, a = w[d.f] = w[d.f] || [];
+    const i = a.indexOf(v);
+    if (i >= 0) a.splice(i, 1);
+    else { if (d.f === 'focus' && a.length >= 3) return toast('Maximal 3 Schwerpunkte – sonst ist nichts mehr Schwerpunkt.', true); if (d.f === 'days' && a.length >= 6) return toast('Maximal 6 Trainingstage – plane mindestens einen Ruhetag.', true); a.push(v); }
+    render(true);
+  },
+  wizNext: () => { wizRead(); const e = wizValid(); if (e) return toast(e, true); UI.wiz.step++; render(); },
+  wizBack: () => { wizRead(); UI.wiz.step = Math.max(0, UI.wiz.step - 1); render(); },
+  wizSave: async () => { const w = UI.wiz; if (!(await applyPlan(w.d, w.plan))) return; UI.wiz = null; closeSheetSilent(); UI.tab = 'heute'; render(); toast('Dein Plan ist bereit 💪'); },
+
+  /* Coach */
+  coach: () => openCoach(),
+  coachAsk: d => coachSend(d.q),
+  coachSend: () => coachSend($('#coach-in')?.value),
+  coachApply: async d => { const m = UI.chat[+d.i]; if (!m?.plan) return; if (!(await applyPlan(m.prefs, m.plan))) { openCoach(); return; } m.applied = true; render(true); openCoach(); toast('Neuer Plan übernommen'); },
+  profSet: d => { S.profile[d.f] = d.v; save(); render(true); },
+
   /* Profil */
   tog: d => { const [a, b] = d.k.split('.'); S[a][b] = !S[a][b]; save(); render(true); },
-  fbDay: d => { const s = S.schedule.season; s[d.d] = s[d.d] === 'football' ? 'rest' : 'football'; save(); render(true); },
+  fbDay: d => { const s = S.schedule.season; s[d.d] = s[d.d] === 'football' ? 'rest' : 'football'; S.profile.sportDays = [1, 2, 3, 4, 5, 6, 7].filter(x => s[x] === 'football'); save(); render(true); },
   export: () => exportData(),
   wipe: async () => {
     if (!(await ask('Alle Daten löschen?', 'Trainings, Pläne und Einstellungen werden auf diesem Gerät endgültig gelöscht. Erstelle vorher ein Backup.', 'Endgültig löschen', true))) return;
-    S = defaults(); save(); stopRest(); UI.tab = 'heute'; render(); toast('Alle Daten gelöscht');
+    S = defaults(); save(); stopRest(); UI.wiz = null; UI.chat = []; UI.tab = 'heute'; render(); toast('Alle Daten gelöscht');
   }
 };
 
@@ -1269,14 +1826,15 @@ const INP = {
   },
   prof: el => {
     const f = el.dataset.f;
-    if (f === 'name') { S.profile.name = el.value.trim().slice(0, 40); return save(); }
-    const v = parseNum(el.value), lim = { age: [10, 99], height: [100, 230], weight: [30, 250], proteinGoal: [0, 400] }[f];
-    if (isNaN(v) || v < lim[0] || v > lim[1]) { toast(`Bitte einen Wert zwischen ${lim[0]} und ${lim[1]} eingeben.`, true); el.value = S.profile[f]; return; }
-    S.profile[f] = Math.round(v * 10) / 10; save(); toast('Gespeichert');
+    if (f === 'name' || f === 'sportName') { S.profile[f] = el.value.trim().slice(0, 40); save(); setTimeout(() => render(true), 0); return; }
+    const v = parseNum(el.value), lim = { age: [14, 99], height: [120, 230], weight: [30, 250] }[f];
+    if (isNaN(v) || v < lim[0] || v > lim[1]) { toast(`Bitte einen Wert zwischen ${lim[0]} und ${lim[1]} eingeben.`, true); el.value = S.profile[f] ?? ''; return; }
+    S.profile[f] = Math.round(v * 10) / 10; save(); setTimeout(() => render(true), 0); toast('Gespeichert');
   },
+  profSel: el => { S.profile[el.dataset.f] = el.value; save(); setTimeout(() => render(true), 0); },
   goals: el => { S.profile.goals = el.value.split('\n').map(x => x.trim()).filter(Boolean); save(); toast('Ziele gespeichert'); },
-  sched: el => { S.schedule[el.dataset.mode][el.dataset.d] = el.value; save(); render(true); },
-  tplName: el => { const v = el.value.trim(); if (!v) { el.value = S.templates[el.dataset.id].name; return; } S.templates[el.dataset.id].name = v.slice(0, 50); save(); render(true); },
+  sched: el => { S.schedule[el.dataset.mode][el.dataset.d] = el.value; save(); setTimeout(() => render(true), 0); },
+  tplName: el => { const v = el.value.trim(); if (!v) { el.value = S.templates[el.dataset.id].name; return; } S.templates[el.dataset.id].name = v.slice(0, 50); save(); setTimeout(() => render(true), 0); },
   exNote: el => { const v = el.value.trim(); if (v) S.exNotes[el.dataset.id] = v.slice(0, 80); else delete S.exNotes[el.dataset.id]; save(); },
   import: el => importData(el)
 };
@@ -1346,8 +1904,13 @@ function bind() {
     const t = e.target.dataset.live;
     if (t === 'libsearch') { UI.libQ = e.target.value; $('#libres').innerHTML = libResults(); }
     if (t === 'picksearch' && PICK) { PICK.q = e.target.value; $('#pickres').innerHTML = pickResults(); }
+    if (t === 'wizbody') { wizRead(); const b = document.getElementById('wiz-bmi'); if (b) b.innerHTML = wizBmi(); }
   });
-  document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('input[data-inp]')) e.target.blur(); });
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    if (e.target.id === 'coach-in') { e.preventDefault(); coachSend(e.target.value); return; }
+    if (e.target.matches('input[data-inp]')) e.target.blur();
+  });
   $('#overlay').addEventListener('click', () => closeSheet());
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') { flushInputs(); save(); } else if (UI.tab !== 'live') render(true); });
   window.addEventListener('pagehide', () => save());
@@ -1356,7 +1919,7 @@ function bind() {
 async function init() {
   await load();
   bind();
-  if (S.active) UI.tab = 'live';
+  if (S.active && S.profile.setupDone) UI.tab = 'live';
   render();
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
   try { if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
